@@ -7,19 +7,21 @@ scenario = Scenario('script.rpy')
 
 User.db = sqlite3.connect('space-quest.db')
 
-def get_message_reply(message):
+def get_message_reply(message):	
+	user = User(message.sender.id)
 	if message.text == "/start":
-		return "Привет!"
+		user.progressLabel, user.progressKey = "start", -1
+		user.save() 	
+		return ("Вы начали игру заново", None)
 	else:
-		user = User(message.sender.id)
 		scenario.progress = (user.progressLabel, user.progressKey)
-		message = scenario.next()
-		if (message == None):
-			message = "Вы прошли игру!"
+		message, menu = scenario.next()
+		user.progressLabel, user.progressKey = scenario.progress
+		user.save()
+		if (menu):
+			return (message, ReplyKeyboardMarkup.create([line for line,label in menu]))
 		else:
-			user.progressLabel, user.progressKey = scenario.progress
-			user.save()
-		return message
+			return (message, None)
 
 
 
@@ -36,8 +38,8 @@ try:
 #			print (update.message)
 			last_update_id = update.update_id
 			
-			reply = get_message_reply(update.message)
-			bot.send_message(update.message.sender.id, reply)
+			reply, keyboard = get_message_reply(update.message)
+			bot.send_message(update.message.sender.id, reply, reply_markup = keyboard)
 
 			
 except KeyboardInterrupt:
