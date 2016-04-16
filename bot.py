@@ -1,10 +1,15 @@
-from twx.botapi import TelegramBot, ReplyKeyboardMarkup, ReplyKeyboardHide, Message
-import sqlite3
+from twx.botapi import TelegramBot, ReplyKeyboardMarkup, ReplyKeyboardHide
 from user import User
 from scenario import Scenario
 import time
+import sys
+import sqlite3
 
-scenario = Scenario('script.rpy')
+scenario_file = 'script.rpy'
+if len(sys.argv) > 1:
+	scenario_file = sys.argv[1]
+
+scenario = Scenario(scenario_file)
 
 User.db = sqlite3.connect('space-quest.db')
 
@@ -55,7 +60,7 @@ try:
 			
 			reply, keyboard = get_message_reply(update.message)
 			bot.send_message(update.message.sender.id, reply, reply_markup = keyboard)
-			print ("sended "+reply)
+			# print ("sended "+reply)
 
 		users = User.getAll()
 		for user in users:
@@ -66,7 +71,7 @@ try:
 			if scenario.get_current().__class__.__name__ != "NodeMenu" and scenario.get_current().__class__.__name__ != "NodeReturn":
 
 				time.sleep(1)
-				
+
 				scenario.progress = (user.progressLabel, user.progressKey)
 				reply, menu = scenario.next()
 				user.progressLabel, user.progressKey = scenario.progress
@@ -75,7 +80,7 @@ try:
 					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardMarkup.create([[line] for line,label in menu]))
 				else:
 					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardHide.create())
-				print ("sended "+reply)
+				# print ("sended "+reply)
 
 			
 except KeyboardInterrupt:
