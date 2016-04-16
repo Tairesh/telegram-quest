@@ -8,9 +8,9 @@ class User:
 
 	_is_new_record = False
 
-	def __init__(self, id):
+	def __init__(self, id = None):
 		if (id == None):
-			return None
+			return
 		cursor = User.db.execute(''' 
 			SELECT progressLabel, progressKey FROM users
 			WHERE id = {0}
@@ -41,3 +41,20 @@ class User:
 				VALUES ({0},'{1}',{2});
 			'''.format(self.id, self.progressLabel, self.progressKey))
 		User.db.commit()
+
+	@staticmethod
+	def getAll():
+		models = []
+		cursor = User.db.execute('''
+			SELECT id, progressLabel, progressKey FROM users
+			WHERE 1
+		''')
+		rows = cursor.fetchall()
+		for row in rows:
+			model = User()
+			model.id = row[0]
+			model.progressLabel = row[1]
+			model.progressKey = row[2]
+			models.append(model)
+
+		return models

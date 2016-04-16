@@ -6,7 +6,7 @@ db.execute('''
 	CREATE TABLE users (
 		`id` INT PRIMARY KEY NOT NULL,
 		`progressLabel` STRING NOT NULL DEFAULT 'start',
-		`progressKey` INT NOT NULL DEFAULT 0
+		`progressKey` INT NOT NULL DEFAULT -1
 	);
 ''')
 db.commit()

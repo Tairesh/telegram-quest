@@ -13,7 +13,7 @@ class Scenario:
 		for line in self._file:
 			line = line.strip().split("#")[0]
 			
-			if (not line or (line.split(" ")[0] in ("image", "show", "with", "define", "scene", "play"))):
+			if (not line or (line.split(" ")[0] in ("image", "show", "hide", "with", "define", "scene", "play"))):
 				continue
 			elif (line.startswith("label")):
 				label = line.split(" ")[1].split(":")[0]
@@ -55,7 +55,7 @@ class Scenario:
 			self.progress = (node.link,-1)
 			return self.next()
 		elif (node.__class__.__name__ == "NodeReturn"):
-			return (node.text, [("Закончить", "end")])
+			return (node.text, [("Начать заново", "start")])
 		elif (node.__class__.__name__ == "NodeMenu"):
 			return (node.text, node.menu)
 		else:
