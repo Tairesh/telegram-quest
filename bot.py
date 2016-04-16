@@ -48,21 +48,6 @@ last_update_id = 0
 try:
 	while True:
 
-		users = User.getAll()
-		for user in users:
-			if (user.progressKey == -1):
-				user.progressKey = 0
-			scenario.progress = (user.progressLabel, user.progressKey)
-			if scenario.get_current().__class__.__name__ != "NodeMenu" and scenario.get_current().__class__.__name__ != "NodeReturn":
-				reply, menu = scenario.next()
-				user.progressLabel, user.progressKey = scenario.progress
-				user.save()
-				if (menu):
-					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardMarkup.create([[line] for line,label in menu]))
-				else:
-					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardHide.create())
-				print ("sended "+reply)
-				time.sleep(1)
 
 		updates = bot.get_updates(last_update_id+1).wait()
 		for update in updates:
@@ -71,6 +56,26 @@ try:
 			reply, keyboard = get_message_reply(update.message)
 			bot.send_message(update.message.sender.id, reply, reply_markup = keyboard)
 			print ("sended "+reply)
+
+		users = User.getAll()
+		for user in users:
+			if (user.progressKey == -1):
+				scenario.progress = (user.progressLabel, 0)
+			else:
+				scenario.progress = (user.progressLabel, user.progressKey)
+			if scenario.get_current().__class__.__name__ != "NodeMenu" and scenario.get_current().__class__.__name__ != "NodeReturn":
+
+				time.sleep(1)
+				
+				scenario.progress = (user.progressLabel, user.progressKey)
+				reply, menu = scenario.next()
+				user.progressLabel, user.progressKey = scenario.progress
+				user.save()
+				if (menu):
+					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardMarkup.create([[line] for line,label in menu]))
+				else:
+					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardHide.create())
+				print ("sended "+reply)
 
 			
 except KeyboardInterrupt:

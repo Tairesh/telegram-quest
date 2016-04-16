@@ -76,12 +76,10 @@ label rightaway:
             jump hentai
 label vn:
     m "It's a story with pictures and music."
-    m "And you'll be able to make choices that influence the 
-outcome of the story."
+    m "And you'll be able to make choices that influence the outcome of the story."
     s "So it's like those choose-your-adventure books?"
     m "Exactly! I plan on making a small romantic story."
-    m "And I figured you could help me... since I know how you 
-like to draw."
+    m "And I figured you could help me... since I know how you like to draw."
     show sylvie normal
     s "Well, I can try. I hope I don't disappoint you."
     m "You can't disappoint me, you know that."
