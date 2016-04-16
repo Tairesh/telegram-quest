@@ -15,13 +15,18 @@ def get_message_reply(message):
 		return ("Вы начали игру заново", None)
 	else:
 		scenario.progress = (user.progressLabel, user.progressKey)
-		message, menu = scenario.next()
+		if scenario.get_current.__class__.__name__ == "NodeMenu":
+			for line,label in scenario.get_current.menu:
+				if (line == message.text):
+					scenario.goto(label,-1)
+					break
+		reply, menu = scenario.next()
 		user.progressLabel, user.progressKey = scenario.progress
 		user.save()
 		if (menu):
-			return (message, ReplyKeyboardMarkup.create([line for line,label in menu]))
+			return (reply, ReplyKeyboardMarkup.create([[line] for line,label in menu]))
 		else:
-			return (message, None)
+			return (reply, None)
 
 
 

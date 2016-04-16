@@ -40,6 +40,12 @@ class Scenario:
 
 		# print (self._labels)
 
+	def get_current(self):
+		return self._labels[self.progress[0]][self.progress[1]]
+
+	def goto(self, label, key = -1):
+		self.progress = (label, key)
+
 	def next(self):
 		self.progress = (self.progress[0], self.progress[1]+1)
 		
