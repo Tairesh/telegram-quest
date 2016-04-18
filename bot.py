@@ -59,7 +59,7 @@ try:
 			last_update_id = update.update_id
 			
 			reply, keyboard = get_message_reply(update.message)
-			bot.send_message(update.message.sender.id, reply, reply_markup = keyboard)
+			bot.send_message(update.message.sender.id, reply, reply_markup = keyboard, parse_mode = 'Markdown')
 			# print ("sended "+reply)
 
 		users = User.getAll()
@@ -70,16 +70,16 @@ try:
 				scenario.progress = (user.progressLabel, user.progressKey)
 			if scenario.get_current().__class__.__name__ != "NodeMenu" and scenario.get_current().__class__.__name__ != "NodeReturn":
 
-				time.sleep(1)
+				time.sleep(5)
 
 				scenario.progress = (user.progressLabel, user.progressKey)
 				reply, menu = scenario.next()
 				user.progressLabel, user.progressKey = scenario.progress
 				user.save()
 				if (menu):
-					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardMarkup.create([[line] for line,label in menu]))
+					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardMarkup.create([[line] for line,label in menu]), parse_mode = 'Markdown')
 				else:
-					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardHide.create())
+					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardHide.create(), parse_mode = 'Markdown')
 				# print ("sended "+reply)
 
 			
