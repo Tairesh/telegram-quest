@@ -15,12 +15,20 @@ User.db = sqlite3.connect('space-quest.db')
 
 def get_message_reply(message):	
 	user = User(message.sender.id)
-	if message.text == "/start" or message.text == "Начать заново":
-		user.progressLabel, user.progressKey = "start", -1
+	if message.text == "/start" or message.text == "🔄 Начать заново":
+		user.progressLabel, user.progressKey, user.active, user.variables = "start", -1, 1, {}
 		user.save() 	
-		return ("Вы начали игру заново", None)
+		return ("Вы начали игру заново", ReplyKeyboardMarkup.create([['⏸ Приостановить игру']],resize_keyboard=True))
+	elif message.text == "/pause" or message.text == "⏸ Приостановить игру":
+		user.active = 0
+		user.save()
+		return ("Игра приостановлена", ReplyKeyboardMarkup.create([['🔄 Начать заново'],['▶️ Продолжить игру']],resize_keyboard=True))
+	elif message.text == "/continue" or message.text == "▶️ Продолжить игру":
+		user.active = 1
+		user.save()
+		return ("Игра возобновлена", ReplyKeyboardMarkup.create([['⏸ Приостановить игру']],resize_keyboard=True))
 	else:
-		scenario.progress = (user.progressLabel, user.progressKey)
+		scenario.load(user)
 		if scenario.get_current().__class__.__name__ == "NodeMenu":
 			menu_item_finded = False
 			for line,label in scenario.get_current().menu:
@@ -30,23 +38,26 @@ def get_message_reply(message):
 					break
 			if (menu_item_finded):
 				reply, menu = scenario.next()
-				user.progressLabel, user.progressKey = scenario.progress
+				user.load(scenario)
+				user.lastMessage = round(time.time())
 				user.save()
 				if (menu):
-					return (reply, ReplyKeyboardMarkup.create([[line] for line,label in menu]))
+					return (reply, ReplyKeyboardMarkup.create([[line] for line,label in menu],resize_keyboard=True))
 				else:
-					return (reply, ReplyKeyboardHide.create())
+					return (reply, ReplyKeyboardMarkup.create([['⏸ Приостановить игру']],resize_keyboard=True))
 			else:
-				return ("???", ReplyKeyboardMarkup.create([[line] for line,label in scenario.get_current().menu]))
+				return ("???", ReplyKeyboardMarkup.create([[line] for line,label in scenario.get_current().menu] + [['🔄 Начать заново']],resize_keyboard=True))
 		else:
-			return ("Чтобы начать заново введите /start", ReplyKeyboardHide.create())
+			if (user.active):
+				return ("Чтобы начать заново введите /start, чтобы приостановить игру введите /pause", ReplyKeyboardMarkup.create([['🔄 Начать заново'],['⏸ Приостановить игру']],resize_keyboard=True))
+			else:
+				return ("Чтобы начать заново введите /start, чтобы продолжить игру введите /continue", ReplyKeyboardMarkup.create([['🔄 Начать заново'],['▶️ Продолжить игру']],resize_keyboard=True))
 
 
 
 bot = TelegramBot('203607471:AAGIXeoretNObpGdN8lh1ecOQWUa5xY12c8')
 bot.update_bot_info().wait()
 print (bot.username)
-bot.on_error = lambda: print("error")
 
 last_update_id = 0
 
@@ -61,8 +72,9 @@ try:
 			reply, keyboard = get_message_reply(update.message)
 			bot.send_message(update.message.sender.id, reply, reply_markup = keyboard, parse_mode = 'Markdown')
 			# print ("sended "+reply)
+			time.sleep(0.5)
 
-		users = User.getAll()
+		users = User.getAll(True, round(time.time())+1) #up to -5
 		for user in users:
 			if (user.progressKey == -1):
 				scenario.progress = (user.progressLabel, 0)
@@ -70,16 +82,17 @@ try:
 				scenario.progress = (user.progressLabel, user.progressKey)
 			if scenario.get_current().__class__.__name__ != "NodeMenu" and scenario.get_current().__class__.__name__ != "NodeReturn":
 
-				time.sleep(5)
-
-				scenario.progress = (user.progressLabel, user.progressKey)
+				scenario.load(user)
 				reply, menu = scenario.next()
-				user.progressLabel, user.progressKey = scenario.progress
+				user.load(scenario)
+				user.lastMessage = round(time.time())
 				user.save()
 				if (menu):
-					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardMarkup.create([[line] for line,label in menu]), parse_mode = 'Markdown')
+					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardMarkup.create([[line] for line,label in menu],resize_keyboard=True), parse_mode = 'Markdown')
 				else:
-					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardHide.create(), parse_mode = 'Markdown')
+					bot.send_message(user.id, reply, reply_markup = ReplyKeyboardMarkup.create([['⏸ Приостановить игру']],resize_keyboard=True), parse_mode = 'Markdown')
+
+				time.sleep(0.5)
 				# print ("sended "+reply)
 
 			
